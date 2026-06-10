@@ -15,6 +15,9 @@ from real Solana mainnet RPC + Jupiter, no API key required.
 | `get_token_price(mint)` | USD price of a token mint (via Jupiter) |
 | `get_transaction(signature)` | Parsed transaction summary (slot, fee, logs, success) |
 | `get_account_info(address)` | Owner program, lamports, executable flag |
+| `get_token_supply(mint)` | Total on-chain supply of a token mint |
+| `get_recent_signatures(address)` | Recent transaction signatures for an account |
+| `get_epoch_info()` | Current epoch / slot / block height / progress |
 
 All endpoints are public. Point at a private RPC by setting `SOLANA_RPC_URL`
 (and optionally `JUPITER_PRICE_API`).

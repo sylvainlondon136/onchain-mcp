@@ -156,6 +156,65 @@ async def get_account_info(address: str) -> dict:
     }
 
 
+@mcp.tool()
+async def get_token_supply(mint: str) -> dict:
+    """Get the total on-chain supply of an SPL token mint.
+
+    Args:
+        mint: Base58-encoded token mint address.
+
+    Returns {mint, amount (raw), decimals, ui_amount}.
+    """
+    result = await _rpc("getTokenSupply", [mint])
+    v = result["value"]
+    return {
+        "mint": mint,
+        "amount": v["amount"],
+        "decimals": v["decimals"],
+        "ui_amount": v["uiAmount"],
+    }
+
+
+@mcp.tool()
+async def get_recent_signatures(address: str, limit: int = 10) -> dict:
+    """List the most recent transaction signatures touching an account.
+
+    Args:
+        address: Base58-encoded account/wallet address.
+        limit: Max number of signatures (1-100, default 10).
+
+    Returns {address, count, signatures: [{signature, slot, block_time, succeeded}]}.
+    """
+    limit = max(1, min(int(limit), 100))
+    result = await _rpc("getSignaturesForAddress", [address, {"limit": limit}])
+    sigs = [
+        {
+            "signature": s["signature"],
+            "slot": s.get("slot"),
+            "block_time": s.get("blockTime"),
+            "succeeded": s.get("err") is None,
+        }
+        for s in result
+    ]
+    return {"address": address, "count": len(sigs), "signatures": sigs}
+
+
+@mcp.tool()
+async def get_epoch_info() -> dict:
+    """Get current Solana network epoch/slot info (epoch, slot, block height, progress)."""
+    result = await _rpc("getEpochInfo", [])
+    slots_in_epoch = result.get("slotsInEpoch") or 0
+    slot_index = result.get("slotIndex") or 0
+    return {
+        "epoch": result.get("epoch"),
+        "absolute_slot": result.get("absoluteSlot"),
+        "block_height": result.get("blockHeight"),
+        "slot_index": slot_index,
+        "slots_in_epoch": slots_in_epoch,
+        "epoch_progress": (slot_index / slots_in_epoch) if slots_in_epoch else None,
+    }
+
+
 def main() -> None:
     """Entry point: run the MCP server over stdio."""
     mcp.run()

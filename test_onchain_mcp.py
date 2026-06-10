@@ -47,3 +47,27 @@ async def test_token_holdings_shape():
     assert res["address"] == FRESH_WALLET
     assert isinstance(res["tokens"], list)
     assert res["token_count"] == len(res["tokens"])
+
+
+@pytest.mark.asyncio
+async def test_usdc_supply():
+    res = await m.get_token_supply(USDC_MINT)
+    assert res["mint"] == USDC_MINT
+    assert res["decimals"] == 6
+    assert int(res["amount"]) > 0
+
+
+@pytest.mark.asyncio
+async def test_epoch_info():
+    res = await m.get_epoch_info()
+    assert res["epoch"] > 0
+    assert res["absolute_slot"] > 0
+    assert 0.0 <= res["epoch_progress"] <= 1.0
+
+
+@pytest.mark.asyncio
+async def test_recent_signatures_shape():
+    res = await m.get_recent_signatures(SPL_TOKEN_PROGRAM, limit=3)
+    assert res["address"] == SPL_TOKEN_PROGRAM
+    assert isinstance(res["signatures"], list)
+    assert res["count"] == len(res["signatures"]) <= 3
